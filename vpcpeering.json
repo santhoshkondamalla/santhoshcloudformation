@@ -8,7 +8,9 @@
 				"CidrBlock": "10.0.0.0/16",
 				"EnableDnsSupport": true,
 				"EnableDnsHostnames": true,
-				"InstanceTenancy": "default"
+				"InstanceTenancy": "default",
+				"Tags" : [ {"Key" : "Name", "Value" : "PublicVPC"} ]
+				
 			},
 			"Metadata": {
 				"AWS::CloudFormation::Designer": {
