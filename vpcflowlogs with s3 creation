@@ -1,0 +1,183 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Resources": {
+		
+		"VPC": {
+			"Type": "AWS::EC2::VPC",
+			"Properties": {
+				"CidrBlock": "10.0.0.0/16",
+				"EnableDnsSupport": true,
+				"EnableDnsHostnames": true,
+				"InstanceTenancy": "default"
+			}
+		},
+		"publicsubnet": {
+			"Type": "AWS::EC2::Subnet",
+			"Properties": {
+				"AvailabilityZone": "ap-south-1a",
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"CidrBlock": "10.0.1.0/24",
+				"MapPublicIpOnLaunch": true
+			}
+
+		},
+		"privatesubnet": {
+			"Type": "AWS::EC2::Subnet",
+			"Properties": {
+				"AvailabilityZone": "ap-south-1b",
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"CidrBlock": "10.0.2.0/24",
+				"MapPublicIpOnLaunch": true
+			},
+			"Metadata": {
+				"AWS::CloudFormation::Designer": {
+					"id": "33570c8a-de4b-4b5b-afbf-cabe752987d0"
+				}
+			}
+		},
+		"publicroutetable": {
+			"Type": "AWS::EC2::RouteTable",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				}
+			}
+
+		},
+		"privateroutetable": {
+			"Type": "AWS::EC2::RouteTable",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				}
+			}
+		},
+		"mySubnetRouteTableAssociation1": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties": {
+				"SubnetId": {
+					"Ref": "publicsubnet"
+				},
+				"RouteTableId": {
+					"Ref": "publicroutetable"
+				}
+			},
+			"Metadata": {
+				"AWS::CloudFormation::Designer": {
+					"id": "f2b43b95-4cea-45a5-9a04-b1390fa7be3a"
+				}
+			}
+		},
+		"mySubnetRouteTableAssociation2": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties": {
+				"SubnetId": {
+					"Ref": "privatesubnet"
+				},
+				"RouteTableId": {
+					"Ref": "privateroutetable"
+				}
+			},
+			"Metadata": {
+				"AWS::CloudFormation::Designer": {
+					"id": "ca3cc4b9-fed4-42f8-9946-7c257bf49031"
+				}
+			}
+		},
+		"myigw": {
+			"Type": "AWS::EC2::InternetGateway",
+			"Properties": {},
+			"Metadata": {
+				"AWS::CloudFormation::Designer": {
+					"id": "861f8b05-86eb-4328-997e-ce1e1df74098"
+				}
+			}
+		},
+		"vpcIGWattachment": {
+			"Type": "AWS::EC2::VPCGatewayAttachment",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"InternetGatewayId": {
+					"Ref": "myigw"
+				}
+			}
+
+		},
+		"publicroute": {
+			"Type": "AWS::EC2::Route",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "publicroutetable"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"GatewayId": {
+					"Ref": "myigw"
+				}
+			},
+			"DependsOn": [
+				"vpcIGWattachment"
+			]
+		},
+		"NAT": {
+			"DependsOn": "vpcIGWattachment",
+			"Type": "AWS::EC2::NatGateway",
+			"Properties": {
+				"AllocationId": {
+					"Fn::GetAtt": ["EIP", "AllocationId"]
+				},
+				"SubnetId": {
+					"Ref": "privatesubnet"
+				},
+				"Tags": [{
+					"Key": "foo",
+					"Value": "bar"
+				}]
+			}
+		},
+		"EIP": {
+			"Type": "AWS::EC2::EIP",
+			"Properties": {
+				"Domain": "vpc"
+			}
+		},
+		"privateRoute": {
+			"Type": "AWS::EC2::Route",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "privateroutetable"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"NatGatewayId": {
+					"Ref": "NAT"
+				}
+			}
+		},
+		"S3Bucket" : {
+		"Type" : "AWS::S3::Bucket",
+		"Properties" : {
+		"BucketName": "santhosh-vpcflowlogs-test"
+						}
+					},
+		
+			"FlowLow" : {
+				"Type": "AWS::EC2::FlowLog",
+				"Properties": {
+					"LogDestination": "arn:aws:s3:::santhosh-vpcflowlogs-test",
+					"LogDestinationType": "s3",
+					"ResourceId": {
+						"Ref": "VPC"
+					},
+					"ResourceType": "VPC",
+					"TrafficType": "ALL"
+				}
+			}
+
+	
+}
+}
