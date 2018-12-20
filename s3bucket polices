@@ -1,0 +1,52 @@
+{
+
+	"AWSTemplateFormatVersion": "2010-09-09",
+
+	"Resources": {
+
+		"S3Bucket": {
+
+			"Type": "AWS::S3::Bucket",
+
+			"Properties": {
+
+				"BucketName": "santhosh-vpcflowlogs-test"
+
+			}
+
+		},
+		"SampleBucketPolicy": {
+			"Type": "AWS::S3::BucketPolicy",
+			"Properties": {
+				"Bucket": "santhosh-vpcflowlogs-test",
+				"PolicyDocument": {
+				"Version": "2012-10-17",
+					"Statement": [
+
+						{
+							"Effect": "Allow",
+							"Action": ["s3:ListBucket"],
+							"Resource": ["arn:aws:s3:::santhosh-vpcflowlogs-test"],
+							"Principal":"*"
+						},
+						{
+							"Effect": "Allow",
+							"Action": [
+								"s3:PutObject",
+								"s3:GetObject"
+							],
+							"Resource": ["arn:aws:s3:::santhosh-vpcflowlogs-test/*"],
+							 "Principal": {
+      						  "AWS" : [
+        							  "arn:aws:iam::278716474939:user/santhosh"
+       							 ]
+     						 }
+						}
+					]
+				}
+			}
+		}
+	}
+}
+
+
