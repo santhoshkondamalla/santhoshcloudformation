@@ -1,0 +1,27 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Resources": {
+		"NewVolume": {
+			"Type": "AWS::EC2::Volume",
+			"Properties": {
+				"Size": "10",
+				"AvailabilityZone": "ap-south-1b",
+				"Tags": [{
+					"Key": "MyTag",
+					"Value": "TagValue"
+				}]
+			}
+		},
+
+		"MountPoint": {
+			"Type": "AWS::EC2::VolumeAttachment",
+			"Properties": {
+				"InstanceId": "i-0eaa50ebdca32edfc",
+				"VolumeId": {
+					"Ref": "NewVolume"
+				},
+				"Device": "/dev/xvdb"
+			}
+		}
+	}
+}
