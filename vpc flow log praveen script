@@ -1,0 +1,150 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "S3: Creating new bucket VPC: Publishing VPC flow logs to newly created S3 bucket",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Project Details"
+                    },
+                    "Parameters": [
+                        "pProjectName",
+                        "pRetentionInDays",
+                        "pTrafficType"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "VPC Details"
+                    },
+                    "Parameters": [
+                        "pVpcId",
+                        "pEnvType"
+                    ]
+                }
+            ]
+        }
+    },
+    "Parameters": {
+        "pProjectName": {
+            "Description": "Project Name",
+            "Type": "String"
+        },
+        "pRetentionInDays": {
+            "Description": "Specify the number of days, logs events to be retained",
+            "Type": "Number",
+            "Default": 90
+        },
+        "pTrafficType": {
+            "Description": "Specify log event traffic type",
+            "Type": "String",
+            "Default": "ALL",
+            "AllowedValues": [
+                "ALL",
+                "ACCEPT",
+                "REJECT"
+            ]
+        },
+        "pVpcId": {
+            "Description": "Specify VPC ID on which flow logs need to be enabled",
+            "Type": "AWS::EC2::VPC::Id"
+        },
+        "pEnvType": {
+            "Description": "Specify VPC Env type i.e., all/prod/dev/stage",
+            "Type": "String",
+            "Default": "all",
+            "AllowedValues": [
+                "all",
+                "prod",
+                "stage",
+                "dev",
+                "management"
+            ]
+        }
+    },
+    "Resources": {
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "AccessControl": "Private",
+                "BucketName": {
+                    "Fn::Join": [
+                        "-",
+                        [
+                            {
+                                "Ref": "pProjectName"
+                            },
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "logs"
+                        ]
+                    ]
+                },
+                "LifecycleConfiguration": {
+                    "Rules": [
+                        {
+                            "Id": "vpcflowlogs",
+                            "Prefix": "VPCFlowLogs",
+                            "Status": "Enabled",
+                            "ExpirationInDays": {
+                                "Ref": "pRetentionInDays"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "FlowLog": {
+            "Type": "AWS::EC2::FlowLog",
+            "Properties": {
+                "ResourceType": "VPC",
+                "ResourceId": {
+                    "Ref": "pVpcId"
+                },
+                "TrafficType": {
+                    "Ref": "pTrafficType"
+                },
+                "LogDestinationType": "s3",
+                "LogDestination": {
+                    "Fn::Join": [
+                        "/",
+                        [
+                            {
+                                "Fn::GetAtt": [
+                                    "S3Bucket",
+                                    "Arn"
+                                ]
+                            },
+                            "VPCFlowLogs",
+                            {
+                                "Ref": "pEnvType"
+                            }
+                        ]
+                    ]
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "rBucketName": {
+            "Value": {
+                "Ref": "S3Bucket"
+            },
+            "Description": "Name of the S3 bucket where VPC logs get stored",
+            "Export": {
+                "Name": "VpcLogBucket"
+            }
+        },
+        "rFlowLog": {
+            "Value": {
+                "Ref": "FlowLog"
+            },
+            "Description": " Flow Log ID",
+            "Export": {
+                "Name": "VpcFlowLogId"
+            }
+        }
+    }
+}
