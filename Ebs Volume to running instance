@@ -1,0 +1,46 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Parameters": {
+        "VpcIdParameter": {
+            "Description": "Launch EC2 instance in this VPC",
+            "Type": "AWS::EC2::VPC::Id"
+        },
+        "Ec2Instance": {
+            "Description": "Launch EC2 instance in this subnet",
+            "Type": "AWS::EC2::Instance::Id"
+		},
+		
+		"AZ": {
+         "Description": "Availability Zone of the Subnet",
+         "Type": "AWS::EC2::AvailabilityZone::Name"
+     }
+	},
+	"Resources": {
+		"NewVolume": {
+			"Type": "AWS::EC2::Volume",
+			"Properties": {
+				"Size": "10",
+				"AvailabilityZone": {
+					"Ref" : "AZ"
+				},
+				"Tags": [{
+					"Key": "MyTag",
+					"Value": "TagValue"
+				}]
+			}
+		},
+
+		"MountPoint": {
+			"Type": "AWS::EC2::VolumeAttachment",
+			"Properties": {
+				"InstanceId": {
+					"Ref" : "Ec2Instance"
+				},
+				"VolumeId": {
+					"Ref": "NewVolume"
+				},
+				"Device": "/dev/xvdb"
+			}
+		}
+	}
+}
