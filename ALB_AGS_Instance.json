@@ -119,6 +119,7 @@
 				"HealthyThresholdCount": 3,
 				"Port": 80,
 				"Protocol": "HTTP",
+				"HealthCheckPath" : "/index.html",
 				"UnhealthyThresholdCount": 5,
 				"VpcId": {
 					"Ref": "VpcId"
