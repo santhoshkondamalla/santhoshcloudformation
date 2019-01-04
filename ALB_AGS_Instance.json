@@ -63,8 +63,8 @@
 				"AutoScalingRollingUpdate": {
 					"MinInstancesInService": "1",
 					"MaxBatchSize": "1",
-					"PauseTime" : "PT30M",
-					"WaitOnResourceSignals": "true"
+					"PauseTime" : "PT5M",
+					"WaitOnResourceSignals": "false"
 				}
 			}
 		},
