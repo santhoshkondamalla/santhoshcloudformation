@@ -210,7 +210,7 @@
 					"Fn::GetAtt": ["EIP", "AllocationId"]
 				},
 				"SubnetId": {
-					"Ref": "privatesubnet"
+					"Ref": "publicsubnet"
 				},
 				"Tags": [{
 					"Key": "foo",
