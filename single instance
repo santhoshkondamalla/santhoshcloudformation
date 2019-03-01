@@ -170,7 +170,8 @@
     "EC2Instance" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
-        "InstanceType" : { "Ref" : "InstanceType" },
+        "InstanceType" : { "Ref" : "InstanceType" },,
+        "IamInstanceProfile" : "s3_FUllAccess",
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
         "KeyName" : { "Ref" : "KeyName" },
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
